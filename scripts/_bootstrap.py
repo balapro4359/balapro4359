@@ -29,6 +29,9 @@ def build(engine_name: str | None = None, settings: Settings | None = None, stor
     if name == "claude_sdk":
         kwargs = {"model": settings.default_model, "api_key": settings.anthropic_api_key,
                   "max_turns": settings.max_agent_turns, "workdir": settings.workdir / "agent-work"}
+    elif name == "claude_api":
+        kwargs = {"model": settings.default_model, "api_key": settings.anthropic_api_key,
+                  "max_turns": settings.max_agent_turns}
     engine = build_engine(name, **kwargs)
     catalog = SkillCatalog.load(settings.skills_dir)
     orchestrator = Orchestrator(engine=engine, store=store, catalog=catalog, registry=default_registry(),

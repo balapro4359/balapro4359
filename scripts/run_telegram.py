@@ -21,7 +21,7 @@ log = get_logger("telegram.main")
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--engine", choices=["claude_sdk", "fake"])
+    ap.add_argument("--engine", choices=["claude_api", "claude_sdk", "fake"])
     ap.add_argument("--webhook", help="public HTTPS base URL; enables webhook mode")
     ap.add_argument("--port", type=int, default=8080)
     args = ap.parse_args()

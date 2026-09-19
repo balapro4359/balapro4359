@@ -13,6 +13,10 @@ def build_engine(name: str, **kwargs) -> AgentEngine:
         from orchestration.engines.claude_sdk_engine import ClaudeSDKEngine
 
         return ClaudeSDKEngine(**kwargs)
+    if name == "claude_api":
+        from orchestration.engines.claude_api_engine import ClaudeAPIEngine
+
+        return ClaudeAPIEngine(**kwargs)
     if name == "fake":
         from orchestration.engines.fake_engine import FakeEngine
 
@@ -21,4 +25,4 @@ def build_engine(name: str, **kwargs) -> AgentEngine:
         from orchestration.engines.langgraph_engine import LangGraphEngine
 
         return LangGraphEngine(**kwargs)
-    raise ValueError(f"Unknown engine {name!r}; expected claude_sdk, fake or langgraph")
+    raise ValueError(f"Unknown engine {name!r}; expected claude_api, claude_sdk, fake or langgraph")

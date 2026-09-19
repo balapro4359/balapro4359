@@ -1,3 +1,5 @@
+anthropic>=1,<2
+jsonschema>=4
 claude-agent-sdk>=0.2.157
 python-telegram-bot>=22.0
 pyyaml>=6.0

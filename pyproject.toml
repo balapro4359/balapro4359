@@ -4,6 +4,8 @@ version = "0.1.0"
 description = "Multi-tenant AI orchestration platform for marketing automation with a swappable agent engine."
 requires-python = ">=3.11"
 dependencies = [
+  "anthropic>=1,<2",
+  "jsonschema>=4",
   "claude-agent-sdk>=0.2.157",
   "python-telegram-bot>=22.0",
   "pyyaml>=6.0",

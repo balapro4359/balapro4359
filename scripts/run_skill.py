@@ -49,7 +49,7 @@ async def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("text", help="the user request")
     ap.add_argument("--skill", help="force a specific skill instead of routing")
-    ap.add_argument("--engine", choices=["claude_sdk", "fake"], help="override ENGINE from the environment")
+    ap.add_argument("--engine", choices=["claude_api", "claude_sdk", "fake"], help="override ENGINE from the environment")
     ap.add_argument("--tenant", help="tenant id (default: a 'cli-demo' tenant is created/reused)")
     ap.add_argument("--brand", help="brand name to use/create in that tenant")
     ap.add_argument("--auto-approve", action="store_true")
