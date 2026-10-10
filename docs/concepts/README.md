@@ -2,7 +2,7 @@
 
 Concept screens for the working title Holdings. They show the mood in Appendix B of `docs/BRIEF.md`. The current direction sits between a recognizable town and a clean simplified surface: real harbors, mines, and fields, with matte materials, few colors, and a quiet type-led interface. They are not the in-game art. Replacing code-drawn shapes with finished Blender art is still on the Later list in `docs/DECISIONS.md`.
 
-The playable Harborview town is still four streets of five plots, with the names in `docs/REFERENCE.md`. These pictures are looser than that grid.
+The playable world uses clean plates of these same places, in `apps/mobile/assets/world/`. Harborview is still four streets of five plots, with the names in `docs/REFERENCE.md`. The files in this folder keep their picture labels.
 
 | File | Screen |
 |---|---|

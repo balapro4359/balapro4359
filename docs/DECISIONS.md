@@ -14,6 +14,7 @@ Dollars, percentages, and ranks drawn on those screens are picture labels. They 
 - The user said to go forward and build the investor app. The game lives in this repository beside the marketing platform (`packages/engine`, `apps/mobile`). That is OQ-1 option 3 until they pick another home.
 - `packages/engine` is Harborview, playable from `apps/mobile`. Ironridge and Greenvale are on the map only. Their prices are not invented.
 - Run it from `apps/mobile` with Flutter stable: `flutter run`, or `flutter run -d chrome` for a desktop window. Engine checks are `dart test` in `packages/engine`.
+- The island, Harborview, Ironridge, and Greenvale are the clean plates in `apps/mobile/assets/world/`, taken from the agreed concept screens. Live labels sit on top of them. The picture numbers were not copied into the game.
 - Open Harborview questions are still open. The app uses the provisional readings below so it can be played. They are not locked rules.
 
 ## Provisional, so the app can play

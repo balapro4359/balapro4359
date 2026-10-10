@@ -20,3 +20,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/world/island.jpg
+    - assets/world/harbor-day.jpg
+    - assets/world/harbor-night.jpg
+    - assets/world/ironridge.jpg
+    - assets/world/greenvale.jpg
