@@ -133,6 +133,37 @@ void main() {
     expect(capped.demand, closeTo(0.225, 1e-9));
   });
 
+  test('extra city drivers do not change car wash or parking income', () {
+    expect(
+      businessIncome(
+        building: BuildingType.carWash,
+        traffic: 55,
+        openForBusiness: true,
+        output: 70,
+        population: 4200,
+        employment: 0.5,
+      ),
+      closeTo(172.5, 1e-9),
+    );
+    expect(
+      businessIncome(
+        building: BuildingType.parking,
+        traffic: 55,
+        openForBusiness: true,
+        output: 70,
+        population: 4200,
+      ),
+      closeTo(85, 1e-9),
+    );
+  });
+
+  test('a house is valued from its rent', () {
+    expect(
+      buildingValue(building: BuildingType.house, dailyIncome: 50),
+      closeTo(50 * Tuning.houseIncomeMultiple, 1e-9),
+    );
+  });
+
   test('a rise of exactly 2 percent is not over 2 percent', () {
     expect(0.02 > Tuning.ritaBuyRise, isFalse);
     expect(0.0201 > Tuning.ritaBuyRise, isTrue);

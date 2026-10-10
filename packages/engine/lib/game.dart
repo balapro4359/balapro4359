@@ -58,6 +58,7 @@ class Investor {
   final double actChance;
   double cash = Tuning.startingCash;
   double totalEarned = 0;
+  double totalTax = 0;
   double bestSale = 0;
   final List<double> netWorth = [];
 }
@@ -231,7 +232,8 @@ const eventDeck = <EventSpec>[
     permanent: true,
     amount: -14,
     rumor: 'Word is the shipping yard may leave the docks.',
-    happenedLine: 'The shipping yard is leaving. Dock traffic is down for good.',
+    happenedLine:
+        'The shipping yard is leaving. Dock traffic is down for good.',
     missedLine: 'The shipping yard is staying.',
   ),
   EventSpec(
@@ -285,7 +287,8 @@ class HoldingsGame {
 
   Plot plot(String id) => plots.firstWhere((p) => p.id == id);
 
-  Street streetOf(Plot plot) => streets.firstWhere((s) => s.id == plot.streetId);
+  Street streetOf(Plot plot) =>
+      streets.firstWhere((s) => s.id == plot.streetId);
 
   int ownedCount(String investorId) =>
       plots.where((p) => p.ownerId == investorId).length;
@@ -351,7 +354,8 @@ class HoldingsGame {
   ActionResult buy(String investorId, String plotId) {
     final person = investor(investorId);
     final target = plot(plotId);
-    if (finished) return const ActionResult(ok: false, reason: 'The season is over.');
+    if (finished)
+      return const ActionResult(ok: false, reason: 'The season is over.');
     if (target.ownerId != null) {
       return const ActionResult(ok: false, reason: 'That plot is owned.');
     }
@@ -378,12 +382,14 @@ class HoldingsGame {
   ActionResult build(String investorId, String plotId, BuildingType type) {
     final person = investor(investorId);
     final target = plot(plotId);
-    if (finished) return const ActionResult(ok: false, reason: 'The season is over.');
+    if (finished)
+      return const ActionResult(ok: false, reason: 'The season is over.');
     if (target.ownerId != investorId) {
       return const ActionResult(ok: false, reason: 'You do not own that plot.');
     }
     if (target.building != null) {
-      return const ActionResult(ok: false, reason: 'Something is already built there.');
+      return const ActionResult(
+          ok: false, reason: 'Something is already built there.');
     }
     final cost = buildingCost(type);
     if (person.cash + 1e-6 < cost) {
@@ -393,7 +399,15 @@ class HoldingsGame {
     target.building = type;
     target.builtOnDay = day;
     target.invested += cost;
-    final label = type == BuildingType.carWash ? 'a car wash' : 'a parking lot';
+    final label = switch (type) {
+      BuildingType.carWash => 'a car wash',
+      BuildingType.parking => 'a parking lot',
+      BuildingType.warehouse => 'a warehouse',
+      BuildingType.diner => 'a diner',
+      BuildingType.silo => 'a silo',
+      BuildingType.farmStand => 'a farm stand',
+      BuildingType.house => 'a house',
+    };
     final entry = LedgerEntry(
       day: day,
       kind: 'bought',
@@ -409,7 +423,8 @@ class HoldingsGame {
   ActionResult sell(String investorId, String plotId) {
     final person = investor(investorId);
     final target = plot(plotId);
-    if (finished) return const ActionResult(ok: false, reason: 'The season is over.');
+    if (finished)
+      return const ActionResult(ok: false, reason: 'The season is over.');
     if (target.ownerId != investorId) {
       return const ActionResult(ok: false, reason: 'You do not own that plot.');
     }
@@ -456,16 +471,37 @@ class HoldingsGame {
 
   void _buildTown() {
     const layout = [
-      ('docks', 'The Docks', 55.0, ['Pier 1', 'Pier 2', 'Pier 3', 'Pier 4', 'Pier 5']),
-      ('main', 'Main Street', 72.0, ['101 Main', '115 Main', '130 Main', '144 Main', '160 Main']),
-      ('old', 'Old Town', 42.0, ['Chapel Ln', 'Mill Row', 'Bell Ct', 'Tanner St', 'Well Sq']),
-      ('edge', 'Edge Road', 22.0, ['Lot 1', 'Lot 2', 'Lot 3', 'Lot 4', 'Lot 5']),
+      (
+        'docks',
+        'The Docks',
+        55.0,
+        ['Pier 1', 'Pier 2', 'Pier 3', 'Pier 4', 'Pier 5']
+      ),
+      (
+        'main',
+        'Main Street',
+        72.0,
+        ['101 Main', '115 Main', '130 Main', '144 Main', '160 Main']
+      ),
+      (
+        'old',
+        'Old Town',
+        42.0,
+        ['Chapel Ln', 'Mill Row', 'Bell Ct', 'Tanner St', 'Well Sq']
+      ),
+      (
+        'edge',
+        'Edge Road',
+        22.0,
+        ['Lot 1', 'Lot 2', 'Lot 3', 'Lot 4', 'Lot 5']
+      ),
     ];
     for (final row in layout) {
       final street = Street(id: row.$1, name: row.$2, baseTraffic: row.$3);
       streets.add(street);
       for (final name in row.$4) {
-        final jitter = _int(-Tuning.trafficStartJitter, Tuning.trafficStartJitter);
+        final jitter =
+            _int(-Tuning.trafficStartJitter, Tuning.trafficStartJitter);
         plots.add(
           Plot(
             id: '${street.id}-${name.toLowerCase().replaceAll(' ', '-')}',
@@ -481,17 +517,43 @@ class HoldingsGame {
       }
     }
     investors.addAll([
-      Investor(id: 'you', name: 'You', style: 'Investor', isBot: false, actChance: 0),
-      Investor(id: 'rita', name: 'Rita', style: 'Follows the crowd', isBot: true, actChance: Tuning.ritaAct),
-      Investor(id: 'omar', name: 'Omar', style: 'Counts cars', isBot: true, actChance: Tuning.omarAct),
-      Investor(id: 'mei', name: 'Mei', style: 'Spreads bets', isBot: true, actChance: Tuning.meiAct),
-      Investor(id: 'dex', name: 'Dex', style: 'Sells on bad news', isBot: true, actChance: Tuning.dexAct),
+      Investor(
+          id: 'you',
+          name: 'You',
+          style: 'Investor',
+          isBot: false,
+          actChance: 0),
+      Investor(
+          id: 'rita',
+          name: 'Rita',
+          style: 'Follows the crowd',
+          isBot: true,
+          actChance: Tuning.ritaAct),
+      Investor(
+          id: 'omar',
+          name: 'Omar',
+          style: 'Counts cars',
+          isBot: true,
+          actChance: Tuning.omarAct),
+      Investor(
+          id: 'mei',
+          name: 'Mei',
+          style: 'Spreads bets',
+          isBot: true,
+          actChance: Tuning.meiAct),
+      Investor(
+          id: 'dex',
+          name: 'Dex',
+          style: 'Sells on bad news',
+          isBot: true,
+          actChance: Tuning.dexAct),
     ]);
     _refillDeck();
   }
 
   void _placeStartingLots() {
-    final eligible = plots.where((p) => p.streetId != 'edge').toList()..shuffle(_random);
+    final eligible = plots.where((p) => p.streetId != 'edge').toList()
+      ..shuffle(_random);
     for (final plot in eligible.take(Tuning.startingParkingLots)) {
       plot.building = BuildingType.parking;
       plot.builtOnDay = 0;
@@ -540,13 +602,11 @@ class HoldingsGame {
       rumor.happened = happens;
       if (happens) {
         _applyEffect(street, rumor.spec);
-        street.demand += rumor.spec.good
-            ? Tuning.happenGoodDemand
-            : Tuning.happenBadDemand;
+        street.demand +=
+            rumor.spec.good ? Tuning.happenGoodDemand : Tuning.happenBadDemand;
       } else {
-        street.demand += rumor.spec.good
-            ? Tuning.missGoodDemand
-            : Tuning.missBadDemand;
+        street.demand +=
+            rumor.spec.good ? Tuning.missGoodDemand : Tuning.missBadDemand;
       }
       ledger.add(
         LedgerEntry(
@@ -632,9 +692,8 @@ class HoldingsGame {
       announcedOn: day,
       decidesOn: day + delay,
     );
-    street.demand += chosen.good
-        ? Tuning.announceGoodDemand
-        : Tuning.announceBadDemand;
+    street.demand +=
+        chosen.good ? Tuning.announceGoodDemand : Tuning.announceBadDemand;
     _nextRumorDay = day + gap;
     ledger.add(
       LedgerEntry(
@@ -678,7 +737,8 @@ class HoldingsGame {
     if (person.id == 'omar') {
       for (final plot in owned) {
         if (plot.building == null) continue;
-        if (incomeOf(plot) < Tuning.omarSellIncome && _random.nextDouble() < 0.5) {
+        if (incomeOf(plot) < Tuning.omarSellIncome &&
+            _random.nextDouble() < 0.5) {
           sell(person.id, plot.id);
         }
       }
@@ -720,7 +780,8 @@ class HoldingsGame {
           ? BuildingType.carWash
           : BuildingType.parking;
     } else if (person.id == 'dex') {
-      preferred = _random.nextBool() ? BuildingType.carWash : BuildingType.parking;
+      preferred =
+          _random.nextBool() ? BuildingType.carWash : BuildingType.parking;
     } else {
       preferred = BuildingType.carWash;
     }
@@ -728,7 +789,8 @@ class HoldingsGame {
       build(person.id, target.id, preferred);
       return;
     }
-    if (preferred != BuildingType.parking && _canBuild(person, BuildingType.parking)) {
+    if (preferred != BuildingType.parking &&
+        _canBuild(person, BuildingType.parking)) {
       build(person.id, target.id, BuildingType.parking);
     }
   }
@@ -767,7 +829,8 @@ class HoldingsGame {
         .map((p) => p.streetId)
         .toSet();
     final options = plots
-        .where((p) => !ownedStreets.contains(p.streetId) && _canAfford(person, p))
+        .where(
+            (p) => !ownedStreets.contains(p.streetId) && _canAfford(person, p))
         .toList();
     if (options.isEmpty) return null;
     options.sort((a, b) => priceOf(a).compareTo(priceOf(b)));
@@ -808,5 +871,6 @@ class HoldingsGame {
 
   int _int(int min, int max) => min + _random.nextInt(max - min + 1);
 
-  double _range(double min, double max) => min + _random.nextDouble() * (max - min);
+  double _range(double min, double max) =>
+      min + _random.nextDouble() * (max - min);
 }

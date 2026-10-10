@@ -12,7 +12,7 @@ Dollars, percentages, and ranks drawn on those screens are picture labels. They 
 
 - Phase 1 is written.
 - The user said to go forward and build the investor app. The game lives in this repository beside the marketing platform (`packages/engine`, `apps/mobile`). That is OQ-1 option 3 until they pick another home.
-- `packages/engine` is Harborview, playable from `apps/mobile`. Ironridge and Greenvale are on the map only. Their prices are not invented.
+- `packages/engine` plays the solo island from `apps/mobile`: Harborview, Ironridge, and Greenvale, plus shares and houses. Appendix A still lives in `HoldingsGame` and is unchanged. The full island is `IslandGame`. Numbers that the brief does not give are provisional starting values, listed below. They are not locked.
 - Run it from `apps/mobile` with Flutter stable: `flutter run`, or `flutter run -d chrome` for a desktop window. Engine checks are `dart test` in `packages/engine`.
 - The island, Harborview, Ironridge, and Greenvale are the clean plates in `apps/mobile/assets/world/`, taken from the agreed concept screens. Live labels sit on top of them. The picture numbers were not copied into the game.
 - Open Harborview questions are still open. The app uses the provisional readings below so it can be played. They are not locked rules.
@@ -33,6 +33,37 @@ Used only because the solo app had to run. Correct any of these and the engine s
 - Street change is `(multiplier now / multiplier then) - 1`.
 - Rumor gaps are measured from announcement to announcement. A busy street is skipped and the card stays in the deck. An empty deck is shuffled again. Permanent ±3 is rolled per plot. A new effect starts after today's income and then lasts its full duration.
 - Return is `(net worth − 12,000) / 12,000`. Total earned includes losing days. Streets invested in are the streets owned when the card is shown. Best sale is the highest cash received. Rank ties break by investor id.
+
+## Provisional, so the whole island can play
+
+The user asked to build the game. The brief names the full world and does not give most of its numbers. The solo app uses the starting values in `packages/engine/lib/tuning.dart` under the island comment. Correct any of them and the engine should change to match. Do not treat them as decisions.
+
+What the brief already locked, and the island keeps:
+
+- City buyback is 95% of formula value.
+- A holder is capped at 20% of a company.
+- A share trade costs a 0.5% fee.
+- Car wash and parking use the Appendix A formulas in every city.
+- Land price uses the Appendix A formula.
+- Solo clock: Next is a fast tick, a slow day is every 4 fast ticks, and the season is 40 slow days.
+
+Choices made so the island can run, still open if you want a different rule:
+
+- City plots are bought instantly at the formula price. Sealed bids stay open (OQ-21). Player-to-player plot listings stay off.
+- `HoldingsGame` is still one Appendix A day per Next. The two clocks belong to `IslandGame` only.
+- Crowd multipliers move on the fast tick. Income, rent, dividends, taxes, census, rumors, and growth move on the slow day.
+- A new building earns on the next slow day, not the one it is built in.
+- Harborview starts at population 4,200, jobs 3,800, trade output 55, growth 0.004, concentration 0.46. Ironridge: 2,100, 1,900, ore 70, growth 0.008, concentration 0.86. Greenvale: 3,100, 2,800, harvest 40, growth 0.002, concentration 0.18. Concentration is stored and shown as the fragility meter. It is not a derived formula yet. Events can move it.
+- Ironridge streets: The Pit 72, Rail Row 48, Camp Road 22. Greenvale: Mill Road 42, River Lane 35, Orchard 28. Harborview keeps the Appendix A streets.
+- A new street opens when population crosses 5,000 in Harborview (New Wharf), 2,500 in Ironridge (Vein Road), or 3,600 in Greenvale (South Field).
+- Each slow day, population, jobs, and output grow by the city's growth times a council pace: pro-growth 1.35, steady 1.0, cautious 0.70. Street bases drift 8% of the way toward that scale.
+- Councils: Harborview steady, Ironridge pro-growth, Greenvale cautious. Property tax per slow day: 0.08%, 0.15%, 0.30%. Business tax on positive income: 5%, 10%, 18%. Permit multiplier on build cost: 0.85, 1.0, 1.20.
+- Greenvale does not allow a car wash on Orchard. A city's own building cannot be built in another city. Houses, car washes, and parking lots are otherwise allowed.
+- Warehouse costs $8,000 and earns `output × 2.4 − 40`. Diner costs $4,000 and earns `population × 0.04 − 30`. Silo costs $7,000 and earns `output × 3.2 − 50`. Farm stand costs $3,000 and earns `output × 1.6 − 20`. A house costs $6,000 and earns `8 + population × 0.012 × employment`. House value is rent × 18. That multiple is the business rule, used here only as a starting value. The 40% cost floor stays on businesses.
+- Each company has 1,000 shares. Prices start near $30–$50 from the city's population and output. The spread is 1%. A lot is 10 shares. Net order flow moves the price by `0.6 × shares / 1,000`, and the price also drifts 5% of the way toward fundamental value with a little noise. Dividends are a small fraction of fundamental value each slow day. Greenvale's co-op yields the most.
+- Tara and Vik trade one lot on the fast tick. Tara buys a 1% rise over 3 ticks and sells a 1.5% drop over 2. Vik buys below 92% of fundamental value and sells above 112%. Their own cap is 15%. Rita, Omar, Mei, and Dex still use the Appendix A land rules, across all cities, with a 6-plot cap, and they may hold up to 10% of a company. Mei prefers a city she does not yet own.
+- Harborview keeps the Appendix A rumor deck. Ironridge and Greenvale have short draft decks (rail spur, headframe fire, camp, food plant, blight, festival). Draft shocks: a new vein, a thin seam, a dry spell, a credit crunch, and a Harbor Savings scare. Councils vote on a project on slow days 12 and 28, announced 4 days ahead at a 55% poll. This copy is draft, like the seven non-ferry Harborview lines.
+- Rank is by net worth. Net worth is cash plus plot values plus shares at the last price. Ties break by investor id. The result card counts every street on the island, not only Harborview's four.
 
 ## Made
 
@@ -257,7 +288,7 @@ The preamble calls the balance simulator phase 4. Section 12 places it after eng
 
 ### Before engine part 2
 
-The brief names these systems and does not give the numbers. They go in `tuning.dart` only after you supply a starting value. Do not invent them in a session. When engine part 2 starts, the session should turn this list into a question for you before coding the system.
+The brief names these systems and does not give the numbers. The solo island now runs on the provisional list above. Those values are not locked. Replace them when you want different ones. Do not add another invented number on top without writing it into that same list.
 
 Harborview's own numbers are already in `docs/REFERENCE.md` and are not repeated here.
 

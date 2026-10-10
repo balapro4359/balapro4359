@@ -61,4 +61,127 @@ abstract final class Tuning {
   static const omarCarWashTraffic = 48.0;
   static const omarSellIncome = 15.0;
   static const startingParkingLots = 2;
+
+  // Provisional figures for the solo island. The brief names these systems
+  // and does not give the numbers. They are starting values so the three
+  // cities can be played. They are not locked. See docs/DECISIONS.md.
+
+  static const fastTicksPerSlowDay = 4;
+
+  static const harborPopulation = 4200.0;
+  static const harborJobs = 3800.0;
+  static const harborOutput = 55.0;
+  static const harborGrowth = 0.004;
+  static const harborConcentration = 0.46;
+  static const harborUnlockPopulation = 5000.0;
+
+  static const ironPopulation = 2100.0;
+  static const ironJobs = 1900.0;
+  static const ironOutput = 70.0;
+  static const ironGrowth = 0.008;
+  static const ironConcentration = 0.86;
+  static const ironUnlockPopulation = 2500.0;
+
+  static const greenPopulation = 3100.0;
+  static const greenJobs = 2800.0;
+  static const greenOutput = 40.0;
+  static const greenGrowth = 0.002;
+  static const greenConcentration = 0.18;
+  static const greenUnlockPopulation = 3600.0;
+
+  static const ironPitTraffic = 72.0;
+  static const ironRailTraffic = 48.0;
+  static const ironCampTraffic = 22.0;
+  static const greenMillTraffic = 42.0;
+  static const greenRiverTraffic = 35.0;
+  static const greenOrchardTraffic = 28.0;
+  static const newWharfTraffic = 30.0;
+  static const veinRoadTraffic = 36.0;
+  static const southFieldTraffic = 24.0;
+
+  static const proGrowthPermit = 0.85;
+  static const steadyPermit = 1.0;
+  static const cautiousPermit = 1.20;
+  static const proGrowthPropertyTax = 0.0008;
+  static const steadyPropertyTax = 0.0015;
+  static const cautiousPropertyTax = 0.003;
+  static const proGrowthBusinessTax = 0.05;
+  static const steadyBusinessTax = 0.10;
+  static const cautiousBusinessTax = 0.18;
+  static const proGrowthPace = 1.35;
+  static const steadyPace = 1.0;
+  static const cautiousPace = 0.70;
+
+  static const warehouseSlope = 2.4;
+  static const warehouseIntercept = -40.0;
+  static const warehouseCost = 8000.0;
+  static const dinerPerCapita = 0.04;
+  static const dinerIntercept = -30.0;
+  static const dinerCost = 4000.0;
+  static const siloSlope = 3.2;
+  static const siloIntercept = -50.0;
+  static const siloCost = 7000.0;
+  static const farmSlope = 1.6;
+  static const farmIntercept = -20.0;
+  static const farmCost = 3000.0;
+  static const houseBase = 8.0;
+  static const housePerCapita = 0.012;
+  static const houseCost = 6000.0;
+
+  /// The ×18 multiple is stated for Appendix A businesses. Houses use the
+  /// same multiple only as a starting value.
+  static const houseIncomeMultiple = 18.0;
+
+  static const sharesOutstanding = 1000;
+  static const shareCap = 0.20;
+  static const shareFee = 0.005;
+  static const shareSpread = 0.01;
+  static const shareImpact = 0.60;
+  static const shareDrift = 0.05;
+  static const shareNoise = 0.008;
+  static const shareMinPrice = 1.0;
+  static const shareLot = 10;
+  static const traderShareCap = 0.15;
+  static const investorShareCap = 0.10;
+
+  static const shippingPerOutput = 280.0;
+  static const shippingPerPerson = 6.0;
+  static const shippingYield = 0.0012;
+  static const bankPerPerson = 5.0;
+  static const bankPerJob = 4.0;
+  static const bankYield = 0.002;
+  static const miningPerOutput = 420.0;
+  static const miningPerPerson = 8.0;
+  static const miningYield = 0.0008;
+  static const coopPerOutput = 220.0;
+  static const coopPerPerson = 6.0;
+  static const coopYield = 0.004;
+
+  static const islandBotMaxPlots = 6;
+  static const taraAct = 0.55;
+  static const vikAct = 0.40;
+  static const taraBuyRise = 0.01;
+  static const taraSellFall = -0.015;
+  static const vikDiscount = 0.92;
+  static const vikPremium = 1.12;
+  static const trafficDrift = 0.08;
+  static const ironFirstRumorDay = 4;
+  static const greenFirstRumorDay = 5;
+  static const shockDelay = 4;
+  static const projectChance = 0.55;
+  static const projectOutputBoost = 0.03;
+  static const projectDemand = 0.05;
+  static const projectMissDemand = -0.02;
+  static const veinOutput = 1.30;
+  static const veinConcentration = 0.05;
+  static const thinOutput = 0.75;
+  static const thinConcentration = 0.02;
+  static const droughtFactor = 0.65;
+  static const droughtDays = 8;
+  static const crunchPrice = 0.88;
+  static const crunchDemand = -0.12;
+  static const bankScarePrice = 0.75;
+  static const bankScareDemand = -0.06;
+  static const ironStartingLots = 1;
+  static const greenStartingLots = 1;
 }

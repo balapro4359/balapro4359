@@ -1,6 +1,6 @@
 import 'tuning.dart';
 
-enum BuildingType { carWash, parking }
+enum BuildingType { carWash, parking, warehouse, diner, silo, farmStand, house }
 
 /// Half-away-from-zero to the nearest $10.
 ///
@@ -34,6 +34,9 @@ double businessIncome({
   required BuildingType? building,
   required double traffic,
   required bool openForBusiness,
+  double output = 0,
+  double population = 0,
+  double employment = 1,
 }) {
   if (building == null || !openForBusiness) return 0;
   return switch (building) {
@@ -41,6 +44,14 @@ double businessIncome({
       traffic * Tuning.carWashSlope + Tuning.carWashIntercept,
     BuildingType.parking =>
       traffic * Tuning.parkingSlope + Tuning.parkingIntercept,
+    BuildingType.warehouse =>
+      output * Tuning.warehouseSlope + Tuning.warehouseIntercept,
+    BuildingType.diner =>
+      population * Tuning.dinerPerCapita + Tuning.dinerIntercept,
+    BuildingType.silo => output * Tuning.siloSlope + Tuning.siloIntercept,
+    BuildingType.farmStand => output * Tuning.farmSlope + Tuning.farmIntercept,
+    BuildingType.house =>
+      Tuning.houseBase + population * Tuning.housePerCapita * employment,
   };
 }
 
@@ -48,6 +59,11 @@ double buildingCost(BuildingType building) {
   return switch (building) {
     BuildingType.carWash => Tuning.carWashCost,
     BuildingType.parking => Tuning.parkingCost,
+    BuildingType.warehouse => Tuning.warehouseCost,
+    BuildingType.diner => Tuning.dinerCost,
+    BuildingType.silo => Tuning.siloCost,
+    BuildingType.farmStand => Tuning.farmCost,
+    BuildingType.house => Tuning.houseCost,
   };
 }
 
@@ -56,6 +72,9 @@ double buildingValue({
   required double dailyIncome,
 }) {
   if (building == null) return 0;
+  if (building == BuildingType.house) {
+    return dailyIncome * Tuning.houseIncomeMultiple;
+  }
   final floor = Tuning.buildingCostFraction * buildingCost(building);
   final fromIncome = dailyIncome * Tuning.buildingIncomeMultiple;
   return floor > fromIncome ? floor : fromIncome;

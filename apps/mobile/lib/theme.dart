@@ -16,6 +16,8 @@ abstract final class HColors {
   static const omar = Color(0xFFD08A2A);
   static const mei = Color(0xFF3E6FBF);
   static const dex = Color(0xFF7A5EA7);
+  static const tara = Color(0xFF2A6B62);
+  static const vik = Color(0xFF8E4B3A);
 }
 
 const _owners = {
@@ -24,6 +26,8 @@ const _owners = {
   'omar': HColors.omar,
   'mei': HColors.mei,
   'dex': HColors.dex,
+  'tara': HColors.tara,
+  'vik': HColors.vik,
 };
 
 Color ownerColor(String? id) => _owners[id] ?? HColors.muted;
@@ -162,7 +166,8 @@ ThemeData holdingsTheme(Brightness brightness) {
       indicatorColor: palette.tealWash,
       height: 64,
       labelTextStyle: WidgetStatePropertyAll(
-        TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: palette.ink),
+        TextStyle(
+            fontSize: 12, fontWeight: FontWeight.w600, color: palette.ink),
       ),
     ),
     snackBarTheme: SnackBarThemeData(

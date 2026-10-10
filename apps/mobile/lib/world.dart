@@ -24,3 +24,11 @@ String harborPlate(Brightness brightness) {
       ? 'assets/world/harbor-night.jpg'
       : 'assets/world/harbor-day.jpg';
 }
+
+String cityPlate(String cityId, Brightness brightness) {
+  return switch (cityId) {
+    'ironridge' => 'assets/world/ironridge.jpg',
+    'greenvale' => 'assets/world/greenvale.jpg',
+    _ => harborPlate(brightness),
+  };
+}

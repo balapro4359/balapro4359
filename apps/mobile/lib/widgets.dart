@@ -118,7 +118,8 @@ class _WorthPainter extends CustomPainter {
     for (var i = 0; i < count; i++) {
       if (i > last) break;
       final x = size.width * i / (count - 1);
-      final y = size.height - ((values[i] - minV) / span) * (size.height - 8) - 4;
+      final y =
+          size.height - ((values[i] - minV) / span) * (size.height - 8) - 4;
       if (!started) {
         path.moveTo(x, y);
         started = true;
@@ -129,7 +130,8 @@ class _WorthPainter extends CustomPainter {
     if (!started) return;
     if (fill) {
       final filled = Path.from(path)
-        ..lineTo(size.width * (last.clamp(0, count - 1)) / (count - 1), size.height)
+        ..lineTo(
+            size.width * (last.clamp(0, count - 1)) / (count - 1), size.height)
         ..lineTo(0, size.height)
         ..close();
       canvas.drawPath(filled, Paint()..color = color.withValues(alpha: 0.12));
@@ -152,7 +154,10 @@ class _WorthPainter extends CustomPainter {
 }
 
 class SoftCard extends StatelessWidget {
-  const SoftCard({super.key, required this.child, this.padding = const EdgeInsets.all(18)});
+  const SoftCard(
+      {super.key,
+      required this.child,
+      this.padding = const EdgeInsets.all(18)});
 
   final Widget child;
   final EdgeInsets padding;
@@ -201,7 +206,8 @@ class PillButton extends StatelessWidget {
           disabledForegroundColor: palette.muted,
           elevation: 0,
           shape: const StadiumBorder(),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, height: 1.15),
+          textStyle: const TextStyle(
+              fontSize: 15, fontWeight: FontWeight.w600, height: 1.15),
           side: filled ? null : BorderSide(color: palette.line),
         ),
         child: Text(label, textAlign: TextAlign.center),
@@ -220,8 +226,16 @@ class StreetChange extends StatelessWidget {
     final palette = HoldingsPalette.of(context);
     final up = (change ?? 0) > 0.0005;
     final down = (change ?? 0) < -0.0005;
-    final color = up ? palette.teal : down ? palette.coral : palette.muted;
-    final arrow = up ? '↑ ' : down ? '↓ ' : '';
+    final color = up
+        ? palette.teal
+        : down
+            ? palette.coral
+            : palette.muted;
+    final arrow = up
+        ? '↑ '
+        : down
+            ? '↓ '
+            : '';
     return Text(
       '$arrow${signedPercent(change)}',
       style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 14),

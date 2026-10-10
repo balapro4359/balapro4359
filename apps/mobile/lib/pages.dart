@@ -9,10 +9,13 @@ import 'widgets.dart';
 import 'world.dart';
 
 class BookPage extends StatelessWidget {
-  const BookPage({super.key, required this.game, required this.onOpenHarbor});
+  const BookPage(
+      {super.key, required this.controller, required this.onOpenHarbor});
 
-  final HoldingsGame game;
+  final GameController controller;
   final VoidCallback onOpenHarbor;
+
+  IslandGame get game => controller.game;
 
   @override
   Widget build(BuildContext context) {
@@ -21,12 +24,19 @@ class BookPage extends StatelessWidget {
     final worth = game.netWorthOf('you');
     final rival = _leadingRival(game);
     final owned = game.plots.where((p) => p.ownerId == 'you').toList();
+    final shares =
+        game.companies.where((c) => game.sharesHeld('you', c.id) > 0).toList();
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
       children: [
         Text(
           'Day ${game.day} of ${Tuning.soloSeasonDays}',
           style: TextStyle(color: palette.muted, fontSize: 14),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Tick ${game.tick} of ${Tuning.fastTicksPerSlowDay}. The day settles on the fourth tick.',
+          style: TextStyle(color: palette.muted, fontSize: 13),
         ),
         const SizedBox(height: 14),
         Text('Net worth', style: TextStyle(fontSize: 14, color: palette.muted)),
@@ -43,11 +53,15 @@ class BookPage extends StatelessWidget {
                 children: [
                   _LegendDot(color: palette.teal),
                   const SizedBox(width: 6),
-                  const Text('You', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                  const Text('You',
+                      style:
+                          TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                   const SizedBox(width: 14),
                   _LegendDot(color: ownerColor(rival.id)),
                   const SizedBox(width: 6),
-                  Text(rival.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                  Text(rival.name,
+                      style: const TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.w600)),
                 ],
               ),
               const SizedBox(height: 12),
@@ -66,12 +80,13 @@ class BookPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 18),
-        const Text('Holdings', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+        const Text('Holdings',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
         const SizedBox(height: 10),
-        if (owned.isEmpty)
+        if (owned.isEmpty && shares.isEmpty)
           const SoftCard(
             child: Text(
-              'Nothing on the book yet. Open Harborview and buy where the cars are.',
+              'Nothing on the book yet. Open a city, or buy shares below.',
               style: TextStyle(fontSize: 16, height: 1.35),
             ),
           )
@@ -88,11 +103,14 @@ class BookPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(plot.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          Text(plot.name,
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w600)),
                           const SizedBox(height: 2),
                           Text(
                             '${street.name} · ${_buildingName(plot.building)}',
-                            style: TextStyle(color: palette.muted, fontSize: 14),
+                            style:
+                                TextStyle(color: palette.muted, fontSize: 14),
                           ),
                         ],
                       ),
@@ -100,7 +118,9 @@ class BookPage extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(money(game.priceOf(plot)), style: const TextStyle(fontWeight: FontWeight.w600)),
+                        Text(money(game.priceOf(plot)),
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w600)),
                         Text(
                           signedMoney(income),
                           style: TextStyle(
@@ -115,16 +135,51 @@ class BookPage extends StatelessWidget {
               ),
             );
           }),
+        for (final listed in shares)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: SoftCard(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(listed.name,
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${game.sharesHeld('you', listed.id)} shares · ${game.city(listed.cityId).name}',
+                          style: TextStyle(color: palette.muted, fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(money(listed.price * game.sharesHeld('you', listed.id)),
+                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+          ),
         const SizedBox(height: 6),
         PillButton(label: 'Open Harborview', onPressed: onOpenHarbor),
         const SizedBox(height: 22),
-        const Text('Standings', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+        const Text('Companies',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 10),
+        for (final listed in game.companies)
+          _CompanyCard(controller: controller, company: listed),
+        const SizedBox(height: 22),
+        const Text('Standings',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
         const SizedBox(height: 10),
         SoftCard(
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: Column(
             children: [
-              for (final person in _ranked(game)) _StandingRow(game: game, person: person),
+              for (final person in _ranked(game))
+                _StandingRow(game: game, person: person),
             ],
           ),
         ),
@@ -139,13 +194,17 @@ class BookPage extends StatelessWidget {
   }
 }
 
-Investor _leadingRival(HoldingsGame game) {
-  return game.investors.where((person) => person.id != 'you').reduce((best, person) {
-    return game.netWorthOf(person.id) > game.netWorthOf(best.id) ? person : best;
+Investor _leadingRival(IslandGame game) {
+  return game.investors
+      .where((person) => person.id != 'you')
+      .reduce((best, person) {
+    return game.netWorthOf(person.id) > game.netWorthOf(best.id)
+        ? person
+        : best;
   });
 }
 
-List<Investor> _ranked(HoldingsGame game) {
+List<Investor> _ranked(IslandGame game) {
   return [...game.investors]..sort((a, b) {
       final byWorth = game.netWorthOf(b.id).compareTo(game.netWorthOf(a.id));
       if (byWorth != 0) return byWorth;
@@ -157,8 +216,108 @@ String _buildingName(BuildingType? building) {
   return switch (building) {
     BuildingType.carWash => 'Car wash',
     BuildingType.parking => 'Parking lot',
+    BuildingType.warehouse => 'Warehouse',
+    BuildingType.diner => 'Diner',
+    BuildingType.silo => 'Grain silo',
+    BuildingType.farmStand => 'Farm stand',
+    BuildingType.house => 'House',
     null => 'Land',
   };
+}
+
+class _CompanyCard extends StatelessWidget {
+  const _CompanyCard({required this.controller, required this.company});
+
+  final GameController controller;
+  final Company company;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = HoldingsPalette.of(context);
+    final game = controller.game;
+    final held = game.sharesHeld('you', company.id);
+    final order = game.orderFor('you', company.id);
+    final home = game.city(company.cityId);
+    final sellLot = held < Tuning.shareLot ? held : Tuning.shareLot;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: SoftCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(company.name,
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 2),
+            Text(
+              '${home.name} · ${money(company.price)} · ${signedPercent(game.shareChange(company.id, 1))}',
+              style: TextStyle(color: palette.muted, fontSize: 14),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              'You hold $held · about ${money(company.fundamental * company.dividendYield)} a share each day',
+              style: const TextStyle(fontSize: 14),
+            ),
+            if (order != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                '${order.buy ? 'Buying' : 'Selling'} ${order.shares}. It fills on the next tick.',
+                style: const TextStyle(fontSize: 14),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: FilledButton(
+                      key: Key('buy-${company.id}'),
+                      onPressed: game.finished
+                          ? null
+                          : () => controller.orderShares(company.id, buy: true),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: palette.ink,
+                        foregroundColor: palette.bg,
+                        shape: const StadiumBorder(),
+                      ),
+                      child: const Text('Buy 10',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: FilledButton(
+                      onPressed: game.finished || held == 0
+                          ? null
+                          : () =>
+                              controller.orderShares(company.id, buy: false),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: palette.card,
+                        foregroundColor: palette.ink,
+                        disabledBackgroundColor: palette.line,
+                        shape: const StadiumBorder(),
+                        side: BorderSide(color: palette.line),
+                      ),
+                      child: Text(
+                        held == 0 ? 'Sell 10' : 'Sell $sellLot',
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _LegendDot extends StatelessWidget {
@@ -179,7 +338,7 @@ class _LegendDot extends StatelessWidget {
 class _StandingRow extends StatelessWidget {
   const _StandingRow({required this.game, required this.person});
 
-  final HoldingsGame game;
+  final IslandGame game;
   final Investor person;
 
   @override
@@ -207,16 +366,20 @@ class _StandingRow extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(person.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    Text(person.name,
+                        style: const TextStyle(fontWeight: FontWeight.w600)),
                     const SizedBox(width: 6),
                     if (person.isBot)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: palette.coral.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(99),
                         ),
-                        child: Text('Bot', style: TextStyle(color: palette.coral, fontSize: 12)),
+                        child: Text('Bot',
+                            style:
+                                TextStyle(color: palette.coral, fontSize: 12)),
                       ),
                   ],
                 ),
@@ -230,7 +393,9 @@ class _StandingRow extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(money(worth), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              Text(money(worth),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600, fontSize: 14)),
               Text(
                 signedPercent(ret),
                 style: TextStyle(
@@ -257,19 +422,22 @@ class _HowToPlay extends StatelessWidget {
       'Cars on each street show its traffic. A weekly census on every 7th day shifts it.',
       'News arrives a few days before it lands. It might not happen.',
       'Four rivals trade the same streets. When the crowd piles into a street, its prices climb.',
+      'The island also has Ironridge and Greenvale, houses, and company shares. Next moves one tick. The day settles every fourth tick.',
     ];
     return SoftCard(
       padding: EdgeInsets.zero,
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          title: const Text('How to play', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+          title: const Text('How to play',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
           childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           children: [
             for (final rule in rules)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: Text(rule, style: const TextStyle(fontSize: 15, height: 1.35)),
+                child: Text(rule,
+                    style: const TextStyle(fontSize: 15, height: 1.35)),
               ),
           ],
         ),
@@ -281,7 +449,7 @@ class _HowToPlay extends StatelessWidget {
 class _ResultCard extends StatelessWidget {
   const _ResultCard({required this.game});
 
-  final HoldingsGame game;
+  final IslandGame game;
 
   @override
   Widget build(BuildContext context) {
@@ -293,98 +461,22 @@ class _ResultCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Rank ${game.rankOf('you')} of 5',
+            'Rank ${game.rankOf('you')} of ${game.investors.length}',
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
-          Text('Net worth ${money(worth)} · ${signedPercent(ret)}', style: const TextStyle(fontSize: 16)),
+          Text('Net worth ${money(worth)} · ${signedPercent(ret)}',
+              style: const TextStyle(fontSize: 16)),
           const SizedBox(height: 4),
-          Text('Earned from businesses ${signedMoney(you.totalEarned)}', style: const TextStyle(fontSize: 15)),
-          Text('Streets invested in ${game.streetsHeld('you')} of 4', style: const TextStyle(fontSize: 15)),
-          Text('Best sale ${money(you.bestSale)}', style: const TextStyle(fontSize: 15)),
-        ],
-      ),
-    );
-  }
-}
-
-void _openPlace(BuildContext context, String id) {
-  final iron = id == 'ironridge';
-  Navigator.of(context).push(
-    PageRouteBuilder<void>(
-      transitionDuration: motionOf(context),
-      reverseTransitionDuration: motionOf(context),
-      pageBuilder: (context, animation, secondary) {
-        return FadeTransition(
-          opacity: animation,
-          child: _ClosedCity(
-            name: iron ? 'Ironridge' : 'Greenvale',
-            line: iron ? 'One mine, fast and fragile' : 'A farming valley, slow and steady',
-            asset: iron ? 'assets/world/ironridge.jpg' : 'assets/world/greenvale.jpg',
-          ),
-        );
-      },
-    ),
-  );
-}
-
-class _ClosedCity extends StatelessWidget {
-  const _ClosedCity({required this.name, required this.line, required this.asset});
-
-  final String name;
-  final String line;
-  final String asset;
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = HoldingsPalette.of(context);
-    return Scaffold(
-      backgroundColor: palette.bg,
-      body: Stack(
-        children: [
-          Positioned.fill(child: WorldPlate(asset: asset)),
-          SafeArea(
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: IconButton.filled(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.arrow_back),
-                  tooltip: 'Back to the island',
-                  style: IconButton.styleFrom(
-                    backgroundColor: palette.card,
-                    foregroundColor: palette.ink,
-                    minimumSize: const Size(48, 48),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                child: SoftCard(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 4),
-                      Text(line, style: const TextStyle(fontSize: 15)),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Prices for this city are not in the book yet.',
-                        style: TextStyle(fontSize: 15, height: 1.35),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+          Text('Earned ${signedMoney(you.totalEarned)}',
+              style: const TextStyle(fontSize: 15)),
+          Text('Taxes ${money(you.totalTax)}',
+              style: const TextStyle(fontSize: 15)),
+          Text(
+              'Streets invested in ${game.streetsHeld('you')} of ${game.streets.length}',
+              style: const TextStyle(fontSize: 15)),
+          Text('Best sale ${money(you.bestSale)}',
+              style: const TextStyle(fontSize: 15)),
         ],
       ),
     );
@@ -392,69 +484,61 @@ class _ClosedCity extends StatelessWidget {
 }
 
 class MapPage extends StatelessWidget {
-  const MapPage({super.key, required this.game, required this.onOpenHarbor});
+  const MapPage({super.key, required this.game, required this.onOpenCity});
 
-  final HoldingsGame game;
-  final VoidCallback onOpenHarbor;
+  final IslandGame game;
+  final ValueChanged<String> onOpenCity;
 
   @override
   Widget build(BuildContext context) {
     final palette = HoldingsPalette.of(context);
-    final changes = game.streets.map((street) => game.streetChange(street.id, 1)).whereType<double>();
-    final harborChange = changes.isEmpty ? null : changes.reduce((a, b) => a + b) / game.streets.length;
+    const tops = [0.18, 0.46, 0.72];
     return LayoutBuilder(
       builder: (context, constraints) {
         final h = constraints.maxHeight;
         return Stack(
           children: [
-            const Positioned.fill(child: WorldPlate(asset: 'assets/world/island.jpg')),
-            Positioned(
-              left: 48,
-              right: 48,
-              top: h * 0.18,
-              child: _CityCard(
-                name: 'Harborview',
-                line: 'Port and trade',
-                detail: 'Buy land, build, and sell today.',
-                change: harborChange,
-                fragility: 0.46,
-                fragilityColor: palette.teal,
-                onTap: onOpenHarbor,
+            const Positioned.fill(
+                child: WorldPlate(asset: 'assets/world/island.jpg')),
+            for (var i = 0; i < game.cities.length; i++)
+              Positioned(
+                left: 48,
+                right: 48,
+                top: h * tops[i],
+                child: _CityCard(
+                  name: game.cities[i].name,
+                  line: game.cities[i].character,
+                  detail: game.cityHasNews(game.cities[i].id)
+                      ? 'News is pending.'
+                      : game.cities[i].council,
+                  change: _cityChange(game, game.cities[i].id),
+                  fragility: game.cities[i].concentration,
+                  fragilityColor: game.cities[i].concentration > 0.6
+                      ? palette.coral
+                      : palette.teal,
+                  onTap: () => onOpenCity(game.cities[i].id),
+                ),
               ),
-            ),
-            Positioned(
-              left: 48,
-              right: 48,
-              top: h * 0.46,
-              child: _CityCard(
-                name: 'Ironridge',
-                line: 'One mine, fast and fragile',
-                detail: 'Prices for this city are not in the book yet.',
-                fragility: 0.86,
-                fragilityColor: palette.coral,
-                closed: true,
-                onTap: () => _openPlace(context, 'ironridge'),
-              ),
-            ),
-            Positioned(
-              left: 48,
-              right: 48,
-              top: h * 0.72,
-              child: _CityCard(
-                name: 'Greenvale',
-                line: 'A farming valley, slow and steady',
-                detail: 'Prices for this city are not in the book yet.',
-                fragility: 0.18,
-                fragilityColor: palette.teal,
-                closed: true,
-                onTap: () => _openPlace(context, 'greenvale'),
-              ),
-            ),
           ],
         );
       },
     );
   }
+}
+
+double? _cityChange(IslandGame game, String cityId) {
+  final values = game
+      .streetsOf(cityId)
+      .map((street) => game.streetChange(street.id, 1))
+      .whereType<double>();
+  if (values.isEmpty) return null;
+  var sum = 0.0;
+  var count = 0;
+  for (final value in values) {
+    sum += value;
+    count += 1;
+  }
+  return sum / count;
 }
 
 class _CityCard extends StatelessWidget {
@@ -465,7 +549,6 @@ class _CityCard extends StatelessWidget {
     required this.fragility,
     required this.fragilityColor,
     this.change,
-    this.closed = false,
     this.onTap,
   });
 
@@ -475,7 +558,6 @@ class _CityCard extends StatelessWidget {
   final double fragility;
   final Color fragilityColor;
   final double? change;
-  final bool closed;
   final VoidCallback? onTap;
 
   @override
@@ -500,20 +582,11 @@ class _CityCard extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text(name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    child: Text(name,
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600)),
                   ),
                   if (change != null) StreetChange(change: change),
-                  if (closed)
-                    Container(
-                      height: 28,
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: palette.line,
-                        borderRadius: BorderRadius.circular(99),
-                      ),
-                      child: Text('Closed', style: TextStyle(color: palette.muted, fontSize: 12)),
-                    ),
                 ],
               ),
               Text(line, style: const TextStyle(fontSize: 13)),
@@ -528,7 +601,8 @@ class _CityCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(detail, style: TextStyle(color: palette.muted, fontSize: 12)),
+              Text(detail,
+                  style: TextStyle(color: palette.muted, fontSize: 12)),
             ],
           ),
         ),
@@ -545,7 +619,10 @@ class HarborPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final game = controller.game;
-    final selected = controller.selectedPlotId == null ? null : game.plot(controller.selectedPlotId!);
+    final selected = controller.selectedPlotId == null
+        ? null
+        : game.plot(controller.selectedPlotId!);
+    final streets = game.streetsOf(controller.cityId);
     return Column(
       children: [
         _HarborBar(controller: controller),
@@ -561,7 +638,12 @@ class HarborPage extends StatelessWidget {
                   height: constraints.maxHeight,
                   child: Stack(
                     children: [
-                      Positioned.fill(child: WorldPlate(asset: harborPlate(night ? Brightness.dark : Brightness.light))),
+                      Positioned.fill(
+                        child: WorldPlate(
+                          asset: cityPlate(controller.cityId,
+                              night ? Brightness.dark : Brightness.light),
+                        ),
+                      ),
                       Positioned(
                         left: 10,
                         right: 10,
@@ -569,7 +651,7 @@ class HarborPage extends StatelessWidget {
                         bottom: 8,
                         child: Column(
                           children: [
-                            for (final street in game.streets)
+                            for (final street in streets)
                               Expanded(
                                 child: _StreetRow(
                                   game: game,
@@ -628,6 +710,7 @@ class _HarborBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = HoldingsPalette.of(context);
     final game = controller.game;
+    final home = game.city(controller.cityId);
     final you = game.investor('you');
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -635,13 +718,33 @@ class _HarborBar extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(
-                '${game.day} of ${Tuning.soloSeasonDays}',
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(home.name,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 16)),
+                    Text(
+                      'Day ${game.day} · tick ${game.tick} of ${Tuning.fastTicksPerSlowDay}',
+                      style: TextStyle(color: palette.muted, fontSize: 13),
+                    ),
+                  ],
+                ),
               ),
-              const Spacer(),
-              Text('Net ${money(game.netWorthOf('you'))}', style: const TextStyle(fontSize: 14)),
+              Text('Net ${money(game.netWorthOf('you'))}',
+                  style: const TextStyle(fontSize: 14)),
             ],
+          ),
+          const SizedBox(height: 2),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              '${count(home.population)} people · ${home.outputLabel} ${home.effectiveOutput.round()} · ${home.council}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: palette.muted, fontSize: 13),
+            ),
           ),
           const SizedBox(height: 8),
           Row(
@@ -649,27 +752,31 @@ class _HarborBar extends StatelessWidget {
               Expanded(
                 child: Text(
                   money(you.cash),
-                  style: TextStyle(fontSize: 16, color: you.cash < 0 ? palette.coral : palette.ink),
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: you.cash < 0 ? palette.coral : palette.ink),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               _TinyButton(
                 label: controller.auto ? 'Auto on' : 'Auto',
                 filled: controller.auto,
-                onPressed: game.finished ? null : () {
-                  HapticFeedback.selectionClick();
-                  controller.toggleAuto();
-                },
+                onPressed: game.finished
+                    ? null
+                    : () {
+                        HapticFeedback.selectionClick();
+                        controller.toggleAuto();
+                      },
               ),
               const SizedBox(width: 8),
               _TinyButton(
-                label: 'Next day',
+                label: 'Next',
                 filled: true,
                 onPressed: game.finished
                     ? null
                     : () {
                         HapticFeedback.lightImpact();
-                        controller.nextDay();
+                        controller.nextTick();
                       },
               ),
             ],
@@ -681,7 +788,8 @@ class _HarborBar extends StatelessWidget {
 }
 
 class _TinyButton extends StatelessWidget {
-  const _TinyButton({required this.label, required this.onPressed, required this.filled});
+  const _TinyButton(
+      {required this.label, required this.onPressed, required this.filled});
 
   final String label;
   final VoidCallback? onPressed;
@@ -718,7 +826,7 @@ class _StreetRow extends StatelessWidget {
     required this.onTap,
   });
 
-  final HoldingsGame game;
+  final IslandGame game;
   final Street street;
   final String? selectedId;
   final ValueChanged<String> onTap;
@@ -726,58 +834,66 @@ class _StreetRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = HoldingsPalette.of(context);
-    final plots = game.plots.where((plot) => plot.streetId == street.id).toList();
+    final plots =
+        game.plots.where((plot) => plot.streetId == street.id).toList();
     return LayoutBuilder(
       builder: (context, constraints) {
         final pinHeight = (constraints.maxHeight - 28).clamp(20.0, 46.0);
         return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: palette.card.withValues(alpha: 0.92),
-            borderRadius: BorderRadius.circular(99),
-            border: Border.all(color: palette.line),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(street.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                const SizedBox(width: 8),
-                StreetChange(change: game.streetChange(street.id, 1)),
-                if (street.rumor != null) ...[
-                  const SizedBox(width: 6),
-                  Text('!', style: TextStyle(color: palette.coral, fontWeight: FontWeight.w700, fontSize: 14)),
-                ],
-              ],
-            ),
-          ),
-        ),
-        const Spacer(),
-        SizedBox(
-          height: pinHeight,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final plot in plots)
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: _PlotPin(
-                      plot: plot,
-                      game: game,
-                      selected: plot.id == selectedId,
-                      onTap: () => onTap(plot.id),
-                    ),
-                  ),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: palette.card.withValues(alpha: 0.92),
+                borderRadius: BorderRadius.circular(99),
+                border: Border.all(color: palette.line),
+              ),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(street.name,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 13)),
+                    const SizedBox(width: 8),
+                    StreetChange(change: game.streetChange(street.id, 1)),
+                    if (street.rumor != null) ...[
+                      const SizedBox(width: 6),
+                      Text('!',
+                          style: TextStyle(
+                              color: palette.coral,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14)),
+                    ],
+                  ],
                 ),
-            ],
-          ),
-        ),
-      ],
-    );
+              ),
+            ),
+            const Spacer(),
+            SizedBox(
+              height: pinHeight,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final plot in plots)
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: _PlotPin(
+                          plot: plot,
+                          game: game,
+                          selected: plot.id == selectedId,
+                          onTap: () => onTap(plot.id),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        );
       },
     );
   }
@@ -792,7 +908,7 @@ class _PlotPin extends StatelessWidget {
   });
 
   final Plot plot;
-  final HoldingsGame game;
+  final IslandGame game;
   final bool selected;
   final VoidCallback onTap;
 
@@ -824,6 +940,7 @@ class _PlotPin extends StatelessWidget {
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
+              if (constraints.maxHeight < 14) return const SizedBox.shrink();
               final showKind = constraints.maxHeight >= 40;
               final showIncome = income != null && constraints.maxHeight >= 58;
               return Column(
@@ -834,12 +951,22 @@ class _PlotPin extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                   if (showKind && plot.building == BuildingType.carWash)
-                    Icon(Icons.water_drop_outlined, size: 14, color: palette.teal)
+                    Icon(Icons.water_drop_outlined,
+                        size: 14, color: palette.teal)
                   else if (showKind && plot.building == BuildingType.parking)
-                    Icon(Icons.local_parking_outlined, size: 14, color: palette.muted)
+                    Icon(Icons.local_parking_outlined,
+                        size: 14, color: palette.muted)
+                  else if (showKind && plot.building != null)
+                    Text(
+                      _buildingName(plot.building),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, color: palette.muted),
+                    )
                   else if (showKind)
                     Text(
                       plot.ownerId == null ? 'Open' : 'Lot',
@@ -877,7 +1004,7 @@ class _PlotSheet extends StatelessWidget {
     required this.onClose,
   });
 
-  final HoldingsGame game;
+  final IslandGame game;
   final Plot plot;
   final VoidCallback onBuy;
   final ValueChanged<BuildingType> onBuild;
@@ -891,6 +1018,7 @@ class _PlotSheet extends StatelessWidget {
     final yours = plot.ownerId == 'you';
     final price = game.priceOf(plot);
     final rumor = street.rumor;
+    final offers = game.offersFor(plot);
     final actions = plot.ownerId == null
         ? PillButton(
             label: 'Buy ${money(price)}',
@@ -899,18 +1027,16 @@ class _PlotSheet extends StatelessWidget {
         : yours && plot.building == null
             ? Column(
                 children: [
-                  PillButton(
-                    label: _buildLabel(plot, BuildingType.carWash),
-                    height: 56,
-                    onPressed: game.finished ? null : () => onBuild(BuildingType.carWash),
-                  ),
-                  const SizedBox(height: 8),
-                  PillButton(
-                    label: _buildLabel(plot, BuildingType.parking),
-                    height: 56,
-                    filled: false,
-                    onPressed: game.finished ? null : () => onBuild(BuildingType.parking),
-                  ),
+                  for (var i = 0; i < offers.length; i++) ...[
+                    PillButton(
+                      label: _offer(offers[i]),
+                      height: 56,
+                      filled: i == 0,
+                      onPressed:
+                          game.finished ? null : () => onBuild(offers[i]),
+                    ),
+                    if (i != offers.length - 1) const SizedBox(height: 8),
+                  ],
                 ],
               )
             : yours
@@ -931,67 +1057,87 @@ class _PlotSheet extends StatelessWidget {
       elevation: 12,
       shadowColor: const Color(0x22000000),
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(plot.name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
-                ),
-                IconButton(
-                  onPressed: onClose,
-                  icon: const Icon(Icons.close),
-                  tooltip: 'Close',
-                  constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-                ),
-              ],
-            ),
-            Text(street.name, style: TextStyle(color: palette.muted, fontSize: 14)),
-            const SizedBox(height: 8),
-            Text(
-              '${game.carsADay(plot).round()} cars a day · ${_censusWord(plot)}',
-              style: const TextStyle(fontSize: 15),
-            ),
-            Text(
-              '${yours ? 'Sale value' : 'Price'} ${money(price)} · Street ${signedPercent(game.streetChange(street.id, 1))}',
-              style: const TextStyle(fontSize: 15),
-            ),
-            if (yours)
+      child: ConstrainedBox(
+        constraints:
+            BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.46),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(plot.name,
+                        style: const TextStyle(
+                            fontSize: 22, fontWeight: FontWeight.w600)),
+                  ),
+                  IconButton(
+                    onPressed: onClose,
+                    icon: const Icon(Icons.close),
+                    tooltip: 'Close',
+                    constraints:
+                        const BoxConstraints(minWidth: 48, minHeight: 48),
+                  ),
+                ],
+              ),
+              Text(street.name,
+                  style: TextStyle(color: palette.muted, fontSize: 14)),
+              const SizedBox(height: 8),
               Text(
-                'In the plot ${money(plot.invested)} · Today ${signedMoney(game.incomeOf(plot))}',
+                '${game.carsADay(plot).round()} cars a day · ${_censusWord(plot)}',
                 style: const TextStyle(fontSize: 15),
               ),
-            if (rumor != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Text(rumor.spec.rumor, style: const TextStyle(fontSize: 14, height: 1.35)),
-              ),
-            if (plot.closureDays > 0)
               Text(
-                'Closed for ${plot.closureDays} more days',
-                style: TextStyle(color: palette.coral, fontSize: 14),
+                '${yours ? 'Sale value' : 'Price'} ${money(price)} · Street ${signedPercent(game.streetChange(street.id, 1))}',
+                style: const TextStyle(fontSize: 15),
               ),
-            const SizedBox(height: 12),
-            actions,
-          ],
+              if (yours)
+                Text(
+                  'In the plot ${money(plot.invested)} · Today ${signedMoney(game.incomeOf(plot))}',
+                  style: const TextStyle(fontSize: 15),
+                ),
+              if (rumor != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Text(rumor.spec.rumor,
+                      style: const TextStyle(fontSize: 14, height: 1.35)),
+                ),
+              if (plot.closureDays > 0)
+                Text(
+                  'Closed for ${plot.closureDays} more days',
+                  style: TextStyle(color: palette.coral, fontSize: 14),
+                ),
+              const SizedBox(height: 12),
+              actions,
+            ],
+          ),
         ),
       ),
     );
   }
 
-  String _buildLabel(Plot plot, BuildingType type) {
+  String _offer(BuildingType type) {
+    final home = game.cityOfPlot(plot);
     final estimate = businessIncome(
       building: type,
       traffic: plot.currentTraffic,
       openForBusiness: true,
+      output: home.effectiveOutput,
+      population: home.population,
+      employment: home.employment,
     );
-    final name = type == BuildingType.carWash ? 'Build a car wash' : 'Build a parking lot';
-    final cost = type == BuildingType.carWash ? Tuning.carWashCost : Tuning.parkingCost;
-    return '$name\n${money(cost)} · ${signedMoney(estimate)} a day';
+    final name = switch (type) {
+      BuildingType.carWash => 'Build a car wash',
+      BuildingType.parking => 'Build a parking lot',
+      BuildingType.warehouse => 'Build a warehouse',
+      BuildingType.diner => 'Build a diner',
+      BuildingType.silo => 'Build a silo',
+      BuildingType.farmStand => 'Build a farm stand',
+      BuildingType.house => 'Build a house',
+    };
+    return '$name\n${money(game.buildCost(plot, type))} · ${signedMoney(estimate)} a day';
   }
 }
 
@@ -1006,7 +1152,7 @@ String _censusWord(Plot plot) {
 class NewsPage extends StatelessWidget {
   const NewsPage({super.key, required this.game});
 
-  final HoldingsGame game;
+  final IslandGame game;
 
   @override
   Widget build(BuildContext context) {
@@ -1017,11 +1163,13 @@ class NewsPage extends StatelessWidget {
       children: [
         const Text(
           'News',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600, letterSpacing: -0.6),
+          style: TextStyle(
+              fontSize: 28, fontWeight: FontWeight.w600, letterSpacing: -0.6),
         ),
         const SizedBox(height: 12),
         if (items.isEmpty)
-          Text('The town is quiet.', style: TextStyle(color: palette.muted, fontSize: 16))
+          Text('The town is quiet.',
+              style: TextStyle(color: palette.muted, fontSize: 16))
         else
           for (final entry in items)
             Padding(
@@ -1030,9 +1178,11 @@ class NewsPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Day ${entry.day}', style: TextStyle(color: palette.muted, fontSize: 12)),
+                    Text('Day ${entry.day}',
+                        style: TextStyle(color: palette.muted, fontSize: 12)),
                     const SizedBox(height: 4),
-                    Text(entry.message, style: const TextStyle(fontSize: 16, height: 1.35)),
+                    Text(entry.message,
+                        style: const TextStyle(fontSize: 16, height: 1.35)),
                   ],
                 ),
               ),

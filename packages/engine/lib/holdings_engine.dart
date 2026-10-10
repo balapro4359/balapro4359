@@ -2,5 +2,6 @@
 library;
 
 export 'game.dart';
+export 'island.dart';
 export 'pricing.dart';
 export 'tuning.dart';

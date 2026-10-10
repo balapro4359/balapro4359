@@ -39,6 +39,25 @@ class InvestorShell extends ConsumerStatefulWidget {
 
 class _InvestorShellState extends ConsumerState<InvestorShell> {
   final _pages = PageController();
+  var _drive = 0;
+
+  void _reveal(int index) {
+    if (!mounted || !_pages.hasClients) return;
+    final page = _pages.page ?? _pages.initialPage.toDouble();
+    if ((page - index).abs() < 0.01) return;
+    final drive = ++_drive;
+    final motion = motionOf(context);
+    if (motion == Duration.zero) {
+      _pages.jumpToPage(index);
+      _drive = 0;
+      return;
+    }
+    _pages
+        .animateToPage(index, duration: motion, curve: Curves.easeOutCubic)
+        .whenComplete(() {
+      if (_drive == drive) _drive = 0;
+    });
+  }
 
   @override
   void dispose() {
@@ -50,13 +69,12 @@ class _InvestorShellState extends ConsumerState<InvestorShell> {
   Widget build(BuildContext context) {
     final controller = ref.watch(gameControllerProvider);
     final palette = HoldingsPalette.of(context);
-    ref.listen<int>(gameControllerProvider.select((c) => c.tab), (previous, next) {
-      if (!_pages.hasClients) return;
-      final current = _pages.page?.round() ?? _pages.initialPage;
-      if (current == next) return;
-      _pages.animateToPage(next, duration: motionOf(context), curve: Curves.easeOutCubic);
+    ref.listen<int>(gameControllerProvider.select((c) => c.tab),
+        (previous, next) {
+      _reveal(next);
     });
-    ref.listen<int>(gameControllerProvider.select((c) => c.noticeId), (previous, next) {
+    ref.listen<int>(gameControllerProvider.select((c) => c.noticeId),
+        (previous, next) {
       final message = ref.read(gameControllerProvider).notice;
       if (message == null || next == previous) return;
       ScaffoldMessenger.of(context)
@@ -65,8 +83,10 @@ class _InvestorShellState extends ConsumerState<InvestorShell> {
     });
 
     final pages = [
-      BookPage(game: controller.game, onOpenHarbor: () => controller.showTab(2)),
-      MapPage(game: controller.game, onOpenHarbor: () => controller.showTab(2)),
+      BookPage(
+          controller: controller,
+          onOpenHarbor: () => controller.openCity('harborview')),
+      MapPage(game: controller.game, onOpenCity: controller.openCity),
       HarborPage(controller: controller),
       NewsPage(game: controller.game),
     ];
@@ -80,6 +100,7 @@ class _InvestorShellState extends ConsumerState<InvestorShell> {
               child: PageView(
                 controller: _pages,
                 onPageChanged: (index) {
+                  if (_drive != 0) return;
                   if (controller.tab != index) controller.showTab(index);
                 },
                 children: pages,
@@ -88,7 +109,8 @@ class _InvestorShellState extends ConsumerState<InvestorShell> {
             if (controller.game.finished)
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-                child: PillButton(label: 'Play again', onPressed: controller.playAgain),
+                child: PillButton(
+                    label: 'Play again', onPressed: controller.playAgain),
               ),
           ],
         ),
@@ -100,23 +122,27 @@ class _InvestorShellState extends ConsumerState<InvestorShell> {
         indicatorColor: palette.tealWash,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: controller.showTab,
-        destinations: const [
-          NavigationDestination(
+        destinations: [
+          const NavigationDestination(
             icon: Icon(Icons.account_balance_wallet_outlined),
             selectedIcon: Icon(Icons.account_balance_wallet),
             label: 'Book',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.map_outlined),
             selectedIcon: Icon(Icons.map),
             label: 'Map',
           ),
           NavigationDestination(
-            icon: Icon(Icons.anchor_outlined),
-            selectedIcon: Icon(Icons.anchor),
-            label: 'Harbor',
+            icon: const Icon(Icons.anchor_outlined),
+            selectedIcon: const Icon(Icons.anchor),
+            label: switch (controller.cityId) {
+              'ironridge' => 'Mine',
+              'greenvale' => 'Valley',
+              _ => 'Harbor',
+            },
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.notes_outlined),
             selectedIcon: Icon(Icons.notes),
             label: 'News',

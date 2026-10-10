@@ -9,8 +9,9 @@ class GameController extends ChangeNotifier {
   }
 
   final int? _seed;
-  late HoldingsGame game;
+  late IslandGame game;
   int tab = 0;
+  String cityId = 'harborview';
   String? selectedPlotId;
   bool auto = false;
   Timer? _auto;
@@ -18,7 +19,8 @@ class GameController extends ChangeNotifier {
   int noticeId = 0;
 
   void _open() {
-    game = HoldingsGame(seed: _seed ?? DateTime.now().millisecondsSinceEpoch);
+    game = IslandGame(seed: _seed ?? DateTime.now().millisecondsSinceEpoch);
+    cityId = 'harborview';
     selectedPlotId = null;
     auto = false;
     notice = null;
@@ -30,6 +32,13 @@ class GameController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void openCity(String id) {
+    cityId = id;
+    selectedPlotId = null;
+    tab = 2;
+    notifyListeners();
+  }
+
   void selectPlot(String? id) {
     selectedPlotId = id;
     notifyListeners();
@@ -37,9 +46,25 @@ class GameController extends ChangeNotifier {
 
   void buySelected() => _act((id) => game.buy('you', id));
 
-  void buildSelected(BuildingType type) => _act((id) => game.build('you', id, type));
+  void buildSelected(BuildingType type) =>
+      _act((id) => game.build('you', id, type));
 
   void sellSelected() => _act((id) => game.sell('you', id));
+
+  void orderShares(String companyId, {required bool buy}) {
+    final held = game.sharesHeld('you', companyId);
+    final shares = buy
+        ? Tuning.shareLot
+        : (held < Tuning.shareLot ? held : Tuning.shareLot);
+    if (shares <= 0) return;
+    final result =
+        game.placeShareOrder('you', companyId, buy: buy, shares: shares);
+    if (!result.ok && result.reason != null) {
+      notice = result.reason;
+      noticeId += 1;
+    }
+    notifyListeners();
+  }
 
   void _act(ActionResult Function(String id) run) {
     final id = selectedPlotId;
@@ -52,9 +77,9 @@ class GameController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void nextDay() {
+  void nextTick() {
     if (game.finished) return;
-    game.nextDay();
+    game.next();
     if (game.finished) {
       auto = false;
       _auto?.cancel();
@@ -67,7 +92,7 @@ class GameController extends ChangeNotifier {
     auto = !auto;
     _auto?.cancel();
     if (auto && !game.finished) {
-      _auto = Timer.periodic(Tuning.autoDayInterval, (_) => nextDay());
+      _auto = Timer.periodic(Tuning.autoDayInterval, (_) => nextTick());
     }
     notifyListeners();
   }

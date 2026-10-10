@@ -28,6 +28,8 @@ String signedPercent(double? value) {
   return '$points%';
 }
 
+String count(num value) => _withCommas(value.round());
+
 String _withCommas(int whole) {
   final digits = whole.toString();
   final out = StringBuffer();
