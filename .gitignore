@@ -1,4 +1,13 @@
 .venv/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+**/build/
+.idea/
+*.iml
+
 __pycache__/
 *.pyc
 *.db

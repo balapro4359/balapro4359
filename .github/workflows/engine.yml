@@ -1,0 +1,32 @@
+name: engine
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+      - working-directory: packages/engine
+        run: dart pub get
+      - working-directory: packages/engine
+        run: dart analyze --fatal-infos
+      - working-directory: packages/engine
+        run: dart test
+
+  mobile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - working-directory: apps/mobile
+        run: flutter pub get
+      - working-directory: apps/mobile
+        run: flutter analyze --fatal-infos
+      - working-directory: apps/mobile
+        run: flutter test

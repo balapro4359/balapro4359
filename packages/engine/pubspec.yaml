@@ -1,0 +1,11 @@
+name: holdings_engine
+description: Pure Dart rules for Holdings. No Flutter, Flame, or Firebase.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.5.0
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.25.0
