@@ -249,13 +249,13 @@ Stop after each phase, show what was built, and wait for "go".
 11. **Analytics.** Stream every action, tick and event to BigQuery. Write saved queries for day-1 and day-7 return rates, where players quit, what they buy, and bot against human results. At the end of a season, ask one question: "Would you play another season?"
 12. **Friends-and-family release.** App icon, splash screen, bundle ID `com.nuriom.holdings`, a privacy policy placeholder, TestFlight and Google Play internal testing builds, and a checklist of what has to be done by hand.
 
-Later (don't build these, just keep the list in `docs/DECISIONS.md`): public worlds, more cities, bots that learn from player data, real art, loans and leverage, cosmetic purchases, and a public store launch.
+Later (don't build these, just keep the list in `docs/DECISIONS.md`): a web interface for larger screens, public worlds, more cities, bots that learn from player data, real art, loans and leverage, cosmetic purchases, and a public store launch. The web interface uses the same engine and the same server. It exists so a large screen can show more of the map, the portfolio, and the charts at once.
 
 ## 13. Decisions
 
 ### Made
 
-- Flutter stable channel, Flame, Riverpod, Firebase, and a Dart service on Cloud Run.
+- Flutter stable channel, Flame, Riverpod, Firebase, and a Dart service on Cloud Run. The shipping client is the mobile app. A web interface for larger screens is later.
 - One pure Dart engine shared by the app and the server.
 - The server decides all outcomes online.
 - Orders cleared in batches at each fast tick.

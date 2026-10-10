@@ -19,7 +19,7 @@ Dollars, percentages, and ranks drawn on those screens are picture labels. They 
 
 From the brief. Do not reopen these unless the user does.
 
-- Client: Flutter stable channel, Flame, Riverpod.
+- The game ships as a mobile app. Confirmed. Day-to-day play, notifications, offline solo, and the friends-and-family release are the phone. Client: Flutter stable channel, Flame, Riverpod, in `apps/mobile/`.
 - Backend: Firebase Auth (Apple, Google, email), Firestore, Cloud Messaging. A Dart world service on Cloud Run, built with shelf, triggered by Cloud Scheduler. BigQuery for analytics and the action log. Terraform. GitHub Actions. Firebase emulators for local development.
 - One pure Dart engine, shared by the solo app and the server. No Flutter, Flame, or Firebase imports inside `packages/engine/`.
 - The server decides all outcomes in online worlds.
@@ -319,6 +319,7 @@ Do not build these. Keep the list.
 - Loans and leverage
 - Cosmetic purchases
 - A public store launch
+- A web interface, for the extra screen space. Same engine, same server, same rules. A large screen can show more of the map, the portfolio, and the charts at once. It is not a second game, and it is not part of the current phases. How that client is built stays undecided until that work starts.
 
 ## Draft copy waiting for approval
 

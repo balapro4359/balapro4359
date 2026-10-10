@@ -42,7 +42,7 @@ Monorepo, managed with melos once phase 2 exists:
 | `tools/sim/` | Headless balance simulator. |
 | `infra/` | Terraform. |
 
-Decided stack: Flutter stable, Flame, Riverpod, Firebase Auth (Apple, Google, email), Firestore, Firebase Cloud Messaging, Cloud Scheduler, BigQuery, Terraform, GitHub Actions, Firebase emulators for local development.
+Decided stack: Flutter stable, Flame, Riverpod, Firebase Auth (Apple, Google, email), Firestore, Firebase Cloud Messaging, Cloud Scheduler, BigQuery, Terraform, GitHub Actions, Firebase emulators for local development. The game ships as the mobile app. A later web interface, for the extra screen space, is under Later in `docs/DECISIONS.md`. Do not build it in the current phases.
 
 Engine rules:
 
@@ -82,4 +82,4 @@ Engine rules:
 11. Analytics. BigQuery, saved queries, end-of-season question.
 12. Friends-and-family release. Icon, splash, bundle id `com.nuriom.holdings`, privacy-policy placeholder, TestFlight and Play internal testing, a checklist of what only the user can do.
 
-Later, do not build: public worlds, more cities, bots that learn from player data, real art, loans and leverage, cosmetic purchases, a public store launch.
+Later, do not build: a web interface for larger screens, public worlds, more cities, bots that learn from player data, real art, loans and leverage, cosmetic purchases, a public store launch.
