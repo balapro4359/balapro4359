@@ -1082,8 +1082,10 @@ class _PlotSheet extends StatelessWidget {
                   ),
                 ],
               ),
-              Text(street.name,
-                  style: TextStyle(color: palette.muted, fontSize: 14)),
+              Text(
+                '${street.name} · ${_buildingName(plot.building)}',
+                style: TextStyle(color: palette.muted, fontSize: 14),
+              ),
               const SizedBox(height: 8),
               Text(
                 '${game.carsADay(plot).round()} cars a day · ${_censusWord(plot)}',

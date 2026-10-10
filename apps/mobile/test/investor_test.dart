@@ -79,6 +79,7 @@ void main() {
     await tester.tap(find.text(free.name));
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.text('Buy ${money(price)}'), findsOneWidget);
+    expect(find.textContaining('· Land'), findsWidgets);
 
     await tester.tap(find.text('Buy ${money(price)}'));
     await tester.pump(const Duration(milliseconds: 400));
@@ -91,6 +92,7 @@ void main() {
     mirror.build('you', free.id, BuildingType.parking);
     expect(find.text('Sell ${money(saleProceeds(mirror.priceOf(free)))}'),
         findsOneWidget);
+    expect(find.textContaining('· Parking lot'), findsWidgets);
 
     await tester.tap(find.text('Next'));
     await tester.pump(const Duration(milliseconds: 500));
