@@ -2,6 +2,12 @@
 
 Working title: Holdings. This file is the record of what is decided, what is still open, and what must not be built. If a session is unsure, the answer is in here or it is not decided. Do not guess.
 
+## Look previews
+
+Concept screens live in `docs/concepts/`. They show the intended mood from Appendix B. They are not final art. Real art stays under Later.
+
+Dollars, percentages, and ranks drawn on those screens are picture labels. They are not values for `tuning.dart`, except where `docs/concepts/README.md` says a figure comes from Appendix A.
+
 ## Status
 
 - Phase 1 (brief and plan) is written: `docs/BRIEF.md`, `AGENTS.md`, `CLAUDE.md`, `docs/REFERENCE.md`, this file.
