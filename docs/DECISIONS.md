@@ -10,10 +10,28 @@ Dollars, percentages, and ranks drawn on those screens are picture labels. They 
 
 ## Status
 
-- Phase 1 (brief and plan) is written: `docs/BRIEF.md`, `AGENTS.md`, `CLAUDE.md`, `docs/REFERENCE.md`, this file.
-- No game code has been written.
-- Stop here. Do not start phase 2 until the user says go and OQ-1 is answered.
-- Do not start phase 3 while any question tagged `blocks phase 3` is still open. Those questions change Harborview tests.
+- Phase 1 is written.
+- The user said to go forward and build the investor app. The game lives in this repository beside the marketing platform (`packages/engine`, `apps/mobile`). That is OQ-1 option 3 until they pick another home.
+- `packages/engine` is Harborview, playable from `apps/mobile`. Ironridge and Greenvale are on the map only. Their prices are not invented.
+- Run it from `apps/mobile` with Flutter stable: `flutter run`, or `flutter run -d chrome` for a desktop window. Engine checks are `dart test` in `packages/engine`.
+- Open Harborview questions are still open. The app uses the provisional readings below so it can be played. They are not locked rules.
+
+## Provisional, so the app can play
+
+Used only because the solo app had to run. Correct any of these and the engine should change to match.
+
+- One tap of Next settles one Appendix A day.
+- Starting street demand is 0. Random ranges are inclusive and uniform.
+- Halfway prices round away from zero. Sale proceeds are the exact 95 percent.
+- Income can take cash below zero.
+- Census days are 7, 14, 21, 28, and 35. The census does not clamp base traffic.
+- A building earns on the settlement of the next day, not the day it is built.
+- Bots start with $12,000. The day-1 forced buy skips the act roll. If the normal buy rule cannot choose, the bot buys the cheapest plot that leaves a $300 buffer.
+- A bot builds on the empty plot it owns with the highest traffic. The parking-lot fallback also requires the build cost plus $500.
+- Omar rolls once per building. Ties keep the earlier plot.
+- Street change is `(multiplier now / multiplier then) - 1`.
+- Rumor gaps are measured from announcement to announcement. A busy street is skipped and the card stays in the deck. An empty deck is shuffled again. Permanent ±3 is rolled per plot. A new effect starts after today's income and then lasts its full duration.
+- Return is `(net worth − 12,000) / 12,000`. Total earned includes losing days. Streets invested in are the streets owned when the card is shown. Best sale is the highest cash received. Rank ties break by investor id.
 
 ## Made
 
