@@ -51,6 +51,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+## notebooklm-py agent skill
+
+`.claude/skills/notebooklm/SKILL.md` is a verbatim copy of `SKILL.md` from
+[notebooklm-py](https://github.com/teng-lin/notebooklm-py) (v0.8.4, commit
+`3665ca5`), Copyright (c) 2026 Teng Lin, MIT License. The full license text is
+in `.claude/skills/notebooklm/LICENSE`.
+
 ## Other dependencies
 
 Runtime dependencies (`claude-agent-sdk`, `python-telegram-bot`, `PyYAML`,
